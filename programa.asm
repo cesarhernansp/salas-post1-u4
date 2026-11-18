@@ -8,6 +8,7 @@ CR          EQU 0Dh         ; Carriage Return (retorno de carro)
 LF          EQU 0Ah         ; Line Feed (salto de linea)
 TERMINADOR  EQU 24h         ; "$": terminador de cadena que exige la funcion 09h
 ITERACIONES EQU 5           ; numero de repeticiones del recorrido de la tabla
+ANCHO_LINEA EQU 40          ; ancho de la linea decorativa (argumento de TIMES)
 
 ; --- Datos inicializados ---
 ; En formato OBJ cada seccion es un segmento independiente de 16 bits.
@@ -15,6 +16,13 @@ ITERACIONES EQU 5           ; numero de repeticiones del recorrido de la tabla
 section .data
     bienvenida  db "=== Laboratorio NASM -- Unidad 4 ===", CR, LF, TERMINADOR
     separador   db "----------------------------------------", CR, LF, TERMINADOR
+
+    ; Linea decorativa: TIMES repite el byte '=' ANCHO_LINEA veces en tiempo de
+    ; ensamblado; los 40 bytes quedan escritos en la imagen del ejecutable y no
+    ; requieren ninguna instruccion en tiempo de ejecucion para generarse.
+linea_gruesa:
+    times ANCHO_LINEA db '='
+    db CR, LF, TERMINADOR
     etiqueta_a  db "Variable A (word): ", TERMINADOR
     etiqueta_b  db "Variable B (dword): ", TERMINADOR
     fin_msg     db "Programa finalizado correctamente.", CR, LF, TERMINADOR
@@ -104,6 +112,11 @@ imprimir_tabla:
     ; Mensaje final con la funcion 09h
     mov ah, 09h
     mov dx, fin_msg
+    int 21h
+
+    ; === Linea decorativa generada con TIMES ===
+    mov ah, 09h
+    mov dx, linea_gruesa
     int 21h
 
     ; Terminar el programa con la funcion 4Ch, codigo de retorno 0
