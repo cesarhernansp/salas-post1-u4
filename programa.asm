@@ -54,6 +54,58 @@ main:
     mov dx, separador               ; AH sigue valiendo 09h
     int 21h
 
+    ; === Funcion 09h: imprimir la etiqueta de la variable ===
+    mov ah, 09h
+    mov dx, etiqueta_a
+    int 21h
+
+    ; === Funcion 02h: imprimir un caracter (el contenido de DL) ===
+    mov al, [var_byte]              ; AL = 42 (2Ah)
+    add al, 30h                     ; 42 + 48 = 90 = "Z" (solo demostrativo)
+    mov ah, 02h                     ; funcion DOS: imprimir caracter en DL
+    mov dl, al
+    int 21h
+
+    ; Imprimir nueva linea (CR + LF) con la misma funcion 02h
+    mov ah, 02h
+    mov dl, CR
+    int 21h
+    mov dl, LF
+    int 21h
+
+    ; === Recorrer la tabla de bytes e imprimir cada elemento ===
+    lea si, [tabla_bytes]           ; SI apunta al inicio de la tabla
+    mov cx, ITERACIONES             ; CX = 5 iteraciones
+
+imprimir_tabla:
+    mov al, [si]                    ; AL = byte actual de la tabla (10..50)
+    aam                             ; AH = decenas, AL = unidades (AL / 10)
+    mov bl, al                      ; BL conserva las unidades
+    mov dl, ah
+    add dl, 30h                     ; decenas convertidas a ASCII
+    mov ah, 02h
+    int 21h                         ; imprime el digito de las decenas
+    mov dl, bl
+    add dl, 30h                     ; unidades convertidas a ASCII
+    int 21h                         ; imprime el digito de las unidades
+
+    mov dl, 20h                     ; espacio entre elementos
+    int 21h
+
+    inc si                          ; avanzar al siguiente byte
+    loop imprimir_tabla             ; CX--; si CX != 0, repetir
+
+    ; Imprimir nueva linea despues de la tabla
+    mov dl, CR
+    int 21h
+    mov dl, LF
+    int 21h
+
+    ; Mensaje final con la funcion 09h
+    mov ah, 09h
+    mov dx, fin_msg
+    int 21h
+
     ; Terminar el programa con la funcion 4Ch, codigo de retorno 0
     mov ax, 4C00h
     int 21h
