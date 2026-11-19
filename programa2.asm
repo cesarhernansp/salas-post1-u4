@@ -1,7 +1,8 @@
 ; programa2.asm -- Laboratorio Post1 Unidad 4 (Parte 2)
 ; Proposito: demostrar macros con parametros y etiquetas locales (macros.asm) y
 ; estructuras de control de flujo: bucle con LOOP (sumar_serie) y condicionales
-; con CMP/Jcc (comparar_e_imprimir).
+; con CMP/Jcc (comparar_e_imprimir con JE/JG y comparar_menor_o_igual con JLE).
+; Incluye ademas la macro bloque_decorativo, basada en %rep (macros.asm).
 
 %include "macros.asm"           ; incorporar la biblioteca de macros utilitarias
 
@@ -14,6 +15,11 @@ section .data
     msg_mayor   db "El valor mayor es: ", 24h
     msg_iguales db "Los valores son iguales.", 0Dh, 0Ah, 24h
     msg_fin     db "Fin del programa.", 0Dh, 0Ah, 24h
+
+    ; Extensiones (Pasos 7 y 8)
+    separador_corto db "---", 0Dh, 0Ah, 24h
+    msg_menor_igual db "AX es menor o igual: ", 24h
+    msg_mayor2      db "AX es mayor: ", 24h
 
 ; --- Datos no inicializados ---
 section .bss
@@ -58,7 +64,15 @@ main:
     mov bx, 5
     call comparar_e_imprimir
 
-    ; 6. Mensaje final y terminacion
+    ; 7. Bloque decorativo desenrollado con %rep (3 copias de "---")
+    bloque_decorativo 3
+
+    ; 8. Comparacion con condicion JLE, reutilizando las macros existentes
+    mov ax, 3
+    mov bx, 8
+    call comparar_menor_o_igual ; imprime: "AX es menor o igual: 3"
+
+    ; 9. Mensaje final y terminacion
     print_str msg_fin
     fin_dos
 
@@ -108,6 +122,36 @@ comparar_e_imprimir:
     print_str msg_iguales
 
 .fin_comp:
+    pop bx
+    pop ax
+    ret
+
+; Procedimiento: comparar AX y BX e indicar si AX es menor o igual, o mayor
+; Entrada: AX y BX con valores 0-9
+; Reutiliza las macros print_str, print_digito y nueva_linea de macros.asm. A
+; diferencia de comparar_e_imprimir (que decide con JE/JG), aqui la decision se
+; toma con un unico salto condicional, JLE. Preserva AX y BX con PUSH/POP.
+comparar_menor_o_igual:
+    push ax
+    push bx
+    cmp ax, bx                  ; actualiza flags con AX - BX
+    jle .menor_o_igual          ; AX <= BX con signo (ZF = 1 o SF != OF)
+
+    ; Caso: AX es mayor
+    mov bl, al                  ; BL = copia del valor de AX (AL cambia al imprimir)
+    print_str msg_mayor2
+    mov al, bl                  ; AL = valor de AX
+    print_digito
+    jmp .fin_cmp2
+
+.menor_o_igual:
+    mov bl, al                  ; BL = copia del valor de AX
+    print_str msg_menor_igual
+    mov al, bl                  ; AL = valor de AX
+    print_digito
+
+.fin_cmp2:
+    nueva_linea
     pop bx
     pop ax
     ret

@@ -79,3 +79,17 @@
     int 21h
     pop ax                      ; restaurar AX
 %endmacro
+
+; --- Macros basadas en %rep ----------------------------------------------------
+
+; Macro: imprimir un separador corto N veces, desenrollado en tiempo de ensamblado
+; %1 = numero de copias (constante conocida al ensamblar, no un valor de ejecucion)
+; Altera: AH, DX
+; %rep duplica el cuerpo %1 veces antes de ensamblar: genera mas bytes de codigo
+; maquina, pero ninguna instruccion de control de bucle (ni CX, ni LOOP, ni CMP)
+; en tiempo de ejecucion. No contiene etiquetas, por lo que no necesita %%.
+%macro bloque_decorativo 1
+    %rep %1
+        print_str separador_corto   ; cada copia se expande como codigo independiente
+    %endrep
+%endmacro
