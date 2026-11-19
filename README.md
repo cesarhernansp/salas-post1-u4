@@ -152,3 +152,9 @@ Fin del programa.
 ### Decisión 4: ¿necesitan etiquetas locales `%%` las extensiones de los Pasos 7 y 8?
 
 `bloque_decorativo`, tal como está escrita, no necesita ninguna etiqueta porque su cuerpo es código lineal: `print_str` expande `mov ah`, `mov dx` e `int 21h`, sin saltos ni destinos de salto, de modo que ninguna etiqueta puede repetirse aunque la macro se invoque varias veces. Si se modificara para que un salto condicional interno omitiera la última copia, el cuerpo definiría una etiqueta de destino; como `%rep` y cada invocación copian ese cuerpo, el mismo nombre quedaría definido más de una vez y NASM reportaría un símbolo duplicado. Ahí se requeriría `%%`, que genera un nombre único por expansión, y habría que cuidar además que el nombre cambie en cada copia del `%rep`. La sola presencia de un salto hacia una etiqueta interna es lo que introduce ese requisito. En cambio, `comparar_menor_o_igual` usa etiquetas con punto (`.menor_o_igual`, `.fin_cmp2`), suficientes porque NASM las asocia a la última etiqueta no local, es decir al procedimiento que las contiene: sus nombres completos son `comparar_menor_o_igual.menor_o_igual` y no colisionan con `comparar_e_imprimir.son_iguales`. Los procedimientos se definen una sola vez, no se expanden por invocación, así que no necesitan el mecanismo `%%`, reservado para macros.
+
+## Historial del repositorio (Checkpoints 4 de ambas partes)
+
+El repositorio acumula 6 commits descriptivos de la Parte 1 (incluido el inicial) y 4 de la Parte 2, para un total de 10 (el mínimo exigido es 3 por parte). La captura muestra `git log --oneline` y el árbol de trabajo sin cambios pendientes.
+
+![Historial de commits](capturas/checkpoint4_repositorio_historial.png)
